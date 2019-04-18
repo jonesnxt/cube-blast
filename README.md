@@ -1,11 +1,11 @@
-![Gem Crush](https://i.imgur.com/pEirZfj.jpg)
+# Cube Blast
 
-*A classic match-three game that's mobile first and production ready.*
+*A easy to play game thats mobile first and production ready.*
 
 ## Things to customize
-- 💎 Replace the jewels with your own images
+- 💎 Replace the cubes with your own images
     * [Open configuration](#~/.koji/pieces.json!visual)
-- 🔈 Change the sounds for swipes and matches
+- 🔈 Change the sounds for breaking cubes
     * [Open configuration](#~/.koji/sounds.json!visual)
 - 💅 Change the background, fonts, and visual style
     * [Open configuration](#~/.koji/style.json!visual)
@@ -16,9 +16,6 @@ When you're ready, [deploy your project](#~/.koji/deploy.json!visual) and share 
 
 ## Code structure
 You can find the code for the main game board [here](#~/frontend/pages/GamePage/components/Game.js).
-
-## Tutorials
-[!yt](https://www.youtube.com/watch?v=-Sga63rvfGY)
 
 ## Support and suggestions
 Please feel free to contact me if you have any suggestions!
