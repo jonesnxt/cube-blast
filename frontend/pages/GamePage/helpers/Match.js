@@ -1,54 +1,26 @@
 import Util from './Util.js';
 
-function find(newBoard, width, height) {
-    let marked = [];
-    // verticals
-    let streak = 0;
-    let streakType = -1;
-    for(let i = 0; i < width; i++) {
-        streakType = -1;
-        streak = 0;
-        for(let j = 0; j < height; j++) {
-            if(streakType === newBoard[i][j].type || streakType === -1) {
-                // continue streak
-                streakType = newBoard[i][j].type;
-                streak ++;
-            } else {
-                if(streak >= 3) {
-                    marked = marked.concat(addMarked(i, j - streak, streak, 'y'));
-                }
-                streak = 1;
-                streakType = newBoard[i][j].type;
-            }
-        }
-        if(streak >= 3) {
-            marked = marked.concat(addMarked(i, height - streak, streak, 'y'));
-        }
-    }
+function find(newBoard, marked, target) {
+    const type = newBoard[target.x][target.y].type;
+    if(marked.length === 4) marked.push({ x: target.x, y: target.y, rowPower: true });
+    else if(marked.length === 7) marked.push({ x: target.x, y: target.y, typePower: true });
+    else marked.push(target);
 
-    // now horizontals
-    for(let j = 0; j < height; j++) {
-        streakType = -1;
-        streak = 0;
-        for(let i = 0; i < width; i++) {
-            if(streakType === newBoard[i][j].type || streakType === -1) {
-                // continue streak
-                streakType = newBoard[i][j].type;
-                streak ++;
-            } else {
-                if(streak >= 3) {
-                    marked = marked.concat(addMarked(i - streak, j, streak, 'x'));
-                }
-                streak = 1;
-                streakType = newBoard[i][j].type;
-            }
-        }
-        if(streak >= 3) {
-            marked = marked.concat(addMarked(width - streak, j, streak, 'x'));
-        }
-    }
+    if (target.x < newBoard.length - 1
+        && findCheck(newBoard, marked, { x: target.x + 1, y: target.y }, type)) marked.concat(find(newBoard, marked, { x: target.x + 1, y: target.y }));
+    if (target.x > 0
+        && findCheck(newBoard, marked, { x: target.x - 1, y: target.y }, type)) marked.concat(find(newBoard, marked, { x: target.x - 1, y: target.y }));
+    if (target.y < newBoard[0].length - 1 
+        && findCheck(newBoard, marked, { x: target.x, y: target.y + 1 }, type)) marked.concat(find(newBoard, marked, { x: target.x, y: target.y + 1 }));
+    if (target.y > 0
+        && findCheck(newBoard, marked, { x: target.x, y: target.y - 1 }, type)) marked.concat(find(newBoard, marked, { x: target.x, y: target.y - 1 }));
 
-    return findPowerups(newBoard, marked);
+    return marked;
+}
+
+function findCheck(newBoard, marked, target, type) {
+    if(newBoard[target.x][target.y].type === type && !marked.some((e) => e.x === target.x && e.y === target.y)) return true;
+    return false;
 }
 
 function addMarked(x, y, length, direction) {
@@ -168,6 +140,7 @@ function sweep(newBoard, width, height) {
 
 export default {
     find,
+    findPowerups,
     mark,
     addPieces,
     sweep,

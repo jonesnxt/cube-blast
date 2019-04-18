@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 const Piece = styled.div.attrs((props) => ({
     style: {
@@ -34,14 +34,14 @@ const Piece = styled.div.attrs((props) => ({
         background: center / contain no-repeat url(${props.image});
     `}
 
-    ${({ rowPower }) => rowPower && `
+    ${( props ) => props.rowPower && `
         border-radius: 100%;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.42);
+        border: 5px dotted #FFF;
     `};
 
     ${(props) => props.typePower && `
         border-radius: 100%;
-        box-shadow: inset 0 0 20px 15px rgba(0,0,0,0.70);
+        box-shadow: inset 0 0 30px 26px rgba(0,0,0,0.70);
     `};
 `;
 

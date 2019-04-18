@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { ThemeProvider, keyframes } from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import GlobalContext from 'GlobalContext';
 import { Helmet } from 'react-helmet';
 import { FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
@@ -11,9 +11,7 @@ const Container = styled.div`
     align-items: center;
     width: 100%;
     height: 100vh;
-    background: url(${({ theme }) => theme.general.backgroundImage});
-    background-size: cover;
-    background-position: center;
+    background: url(${({ theme }) => theme.general.backgroundImage}) top left / 100% 100%;
     flex-direction: column;
     text-align:center;
 `;
@@ -43,68 +41,29 @@ const Content = styled.div`
     opacity: 1;
     z-index: 1;
     color: ${({ theme }) => theme.style.textColor};
-    text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+    text-shadow: 0 1px 6px rgba(0,0,0,0.4);
     font-family: '${({ theme }) => getFontFamily(theme.general.fontFamily)}', sans-serif;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-`;
-
-const VolumeControl = styled.div`
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    font-size: 14px;
-    background-color: rgba(0,0,0,0.6);
-    border-radius: 6px;
-    padding: 6px;
-    display: flex;
-    align-items: center;
-    color: white;
-
-    &:hover {
-        background-color: rgba(0,0,0,0.9);
-    }
 `;
 
 const Title = styled.h1`
     font-size: 32px;
-    margin: 0;
-    margin-bottom: 12px;
-`;
-
-const Animation = keyframes`
-    0% {
-        transform: scale(1,1);
-    }
-    50% {
-        transform: scale(0.85,0.85);
-    }
-    100% {
-        transform: scale(1,1);
-    }
 `;
 
 const Start = styled.button`
-    max-width: 320px;
-    font-size: 24px;
-    background: rgba(0,0,0,0.7);
-    border: 4px solid ${({ theme }) => theme.style.textColor};
+    font-size: 36px;
+    background: rgba(0,0,0,0);
+    border: 1px solid ${({ theme }) => theme.style.textColor};
     color: ${({ theme }) => theme.style.textColor};
     box-shadow: 0 2px 12px rgba(0,0,0,0.24);
     text-shadow: 0 1px 6px rgba(0,0,0,0.4);
     cursor: pointer;
-    padding: 10px 64px;
-    border-radius: 1000px;
-    margin-bottom: 10vh;
-    animation: ${Animation} 2s ease-in-out infinite;
+    margin: 36px;
+    margin-top: 100px;
 
     transition: background-color 0.1s ease-in-out;
 
-    &:hover {
-        background-color: rgba(0,0,0,0.3);
+    :hover {
+        background-color: rgba(0,0,0,0.1);
     }
 `;
 
@@ -138,13 +97,13 @@ class HomePage extends React.Component {
             </Helmet>
             <Cover color={this.state.color} colorSwitch={this.state.colorSwitch} />
             <Content>
-                <VolumeControl>
+                <Title>
+                    {this.context.general.name}&nbsp;&nbsp;
                     {this.state.muted ? 
                         <FaVolumeMute onClick={() => this.toggleMute(false)} />
                       : <FaVolumeUp onClick={() => this.toggleMute(true)} />
                     }
-                </VolumeControl>
-                <Title>{this.context.general.name}</Title>
+                </Title>
                 {this.state.start ? (
                     <Game onFlash={(color) => this.flash(color)} muted={this.state.muted} />
                 ) : (

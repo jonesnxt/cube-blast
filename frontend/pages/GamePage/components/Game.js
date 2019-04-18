@@ -13,7 +13,6 @@ import Match from '../helpers/Match.js';
 import Swap from '../helpers/Swap.js';
 import Delete from '../helpers/Delete.js';
 import Util from '../helpers/Util.js';
-import Scoring from '../helpers/Scoring.js';
 
 const Pieces = styled.div`
 	display: flex;
@@ -28,7 +27,6 @@ const Pieces = styled.div`
 const Container = styled.div`
     width: ${({ width }) => width}px;
     margin: 0 auto;
-    margin-bottom: 24px;
 `;
 
 class Game extends React.Component {
@@ -55,7 +53,6 @@ class Game extends React.Component {
         this.backgroundMusic = Sound.findAndLoop(this.context.sounds.backgroundMusic, this.props.muted);
         this.swappingSound = Sound.find(this.context.sounds.swappingSound);
         this.matchingSound = Sound.find(this.context.sounds.matchingSound);
-        Scoring.getScores();
         
         // calculate max size for blocks given screen size.
         this.setState({
@@ -92,7 +89,7 @@ class Game extends React.Component {
             score: 0,
             multiplier: 1,
             gameOver: false,
-        }, () => this.checkMatches());
+        });
     }
         
     prepMatching(callback) {
@@ -108,85 +105,46 @@ class Game extends React.Component {
         return JSON.parse(JSON.stringify(e));
     }
 
-    checkMatches() {
+    checkMatches(target) {
         let newBoard = this.copy(this.state.board);
         
-        let found = Match.find(newBoard, this.context.general.width, this.context.general.height);
-        if (found.length > 0) {
-            // we have at least one match, deal with it.
-
-            this.manageAnimation(() => {
-                // setup
-                newBoard = this.copy(this.state.board);
-                newBoard = Match.addPieces(newBoard, found);
-                this.setState({ board: newBoard });
-            }, () => {
-                // animate
-                newBoard = this.copy(this.state.board);
-                Sound.play(this.matchingSound, this.props.muted);
-                this.props.onFlash(Util.getColor(newBoard[found[0].x][found[0].y].type));
-
-                newBoard = Match.mark(newBoard, found, this.context.general.width, this.context.general.height);
-                this.collectEffects(newBoard, found);
-                this.setState({ board: newBoard });
-            }, () => {
-                // update dom
-                newBoard = this.copy(this.state.board);
-                newBoard = Match.sweep(newBoard, this.context.general.width, this.context.general.height);
-                // cleaned, reset state then lets run it again
-                this.setState({ board: newBoard, multiplier: this.state.multiplier + 1 });
-            }, () => {
-                // callback
-                this.checkMatches();
-            });
-        } else {
-            // we are done, commit..., and check game over
-            setTimeout(() => {
-                this.setState({ busy: false, effects: [], gameOver: this.state.moves === 0 });
-            }, this.context.general.animationTime);
+        let found = Match.find(newBoard, [], target);
+        if(found.length === 1) {
+            this.setState({ busy: false, moves: this.state.moves + 1 });
+            return;
         }
-    }
+        found = Match.findPowerups(newBoard, found);
 
-    swapPieces(p1, p2) {
-        let newBoard = {};
-        // animate swap
         this.manageAnimation(() => {
             // setup
-            Sound.play(this.swappingSound, this.props.muted);
+            newBoard = this.copy(this.state.board);
+            newBoard = Match.addPieces(newBoard, found);
+            this.setState({ board: newBoard });
         }, () => {
             // animate
             newBoard = this.copy(this.state.board);
-            newBoard = Swap.setupAnimation(newBoard, p1, p2);
-            this.setState({ board: newBoard })
+            Sound.play(this.matchingSound, this.props.muted);
+            this.props.onFlash(Util.getColor(newBoard[found[0].x][found[0].y].type));
+
+            newBoard = Match.mark(newBoard, found, this.context.general.width, this.context.general.height);
+            this.collectEffects(newBoard, found);
+            this.setState({ board: newBoard });
         }, () => {
             // update dom
             newBoard = this.copy(this.state.board);
-            newBoard = Swap.swapPieces(newBoard, p1, p2);
-            // cleaned, on to the next thing
+            newBoard = Match.sweep(newBoard, this.context.general.width, this.context.general.height);
+            // cleaned, reset state then lets run it again
             this.setState({ board: newBoard });
         }, () => {
             // callback
-            this.prepMatching(() => this.checkMatches());
+            this.setState({ busy: false, effects: [], gameOver: this.state.moves === 0 });
         });
     }
 
     pieceClick(x, y) {
         if(this.state.busy) return;
-        let newBoard = this.copy(this.state.board);
 
-        if (this.state.pieceSelected) {
-            // check orothogonality
-            if (Math.abs(x - this.state.pieceSelected.x) + Math.abs(y - this.state.pieceSelected.y) === 1) {
-                // we have orthogorality, swap pieces and see if theres a match.
-                this.swapPieces({ x, y }, this.state.pieceSelected);
-            } else {
-                newBoard[this.state.pieceSelected.x][this.state.pieceSelected.y].selected = false;
-                this.setState({ board: newBoard, pieceSelected: undefined });
-            }
-        } else {
-            newBoard[x][y].selected = true;
-            this.setState({ board: newBoard, pieceSelected: { x, y } });
-        }
+        this.prepMatching(() => this.checkMatches({ x, y }));
     }
 
     manageAnimation(setup, animationState, finalState, callback) {
@@ -214,6 +172,7 @@ class Game extends React.Component {
 
     collectEffects(newBoard, marked) {
         let effects = [];
+        console.log(marked);
         let newScore = this.state.score;
         marked.forEach((mark) => {
             let amount = this.context.general.baseScore * this.state.multiplier;
@@ -223,37 +182,6 @@ class Game extends React.Component {
         });
 
         this.setState({ score: newScore, effects: this.state.effects.concat(effects) });
-    }
-
-    startSwipe(e, x, y) {
-        this.setState({ swiping: true, swipeStart: { x: e.clientX, y: e.clientY } });
-        this.pieceClick(x, y);
-    }
-
-    moveSwipe(e) {
-        if (this.state.swiping) {
-            this.setState({ swipeDelta: {
-                x: e.clientX - this.state.swipeStart.x,
-                y: e.clientY - this.state.swipeStart.y,
-            }});
-        }
-    }
-
-    endSwipe(e) {
-        e.preventDefault();
-        let dx = this.state.swipeDelta.x;
-        let dy = this.state.swipeDelta.y;
-        this.setState({ swiping: false, swipeStart: { x: 0, y: 0 }, swipeDelta: { x: 0, y: 0 } });
-
-        if(Math.abs(dx) + Math.abs(dy) > this.state.blockSize / 2) {
-            if(Math.abs(dx) > Math.abs(dy)) {
-                this.pieceClick(this.state.pieceSelected.x + (dx > 0 ? 1 : -1), this.state.pieceSelected.y);
-            } else {
-                this.pieceClick(this.state.pieceSelected.x, this.state.pieceSelected.y + (dy > 0 ? 1 : -1));
-            }
-        } else {
-            // if the swipe is not far its a click, just hang out.
-        }
     }
 
 	render() {
@@ -277,12 +205,7 @@ class Game extends React.Component {
                             animate={this.state.animate}
                             color={Util.getColor(e.type)}
                             image={Util.getImage(e.type)}
-                            onTouchEnd={(e) => this.endSwipe(e)}
-                            onMouseUp={(e) => this.endSwipe(e)}
-                            onTouchMove={(e) => this.moveSwipe(e.touches[0])}
-                            onMouseMove={(e) => this.moveSwipe(e)}
-                            onTouchStart={(e) => this.startSwipe(e.touches[0], x, y)}
-                            onMouseDown={(e) => this.startSwipe(e, x, y)}
+                            onClick={() => this.pieceClick(x, y)}
                         />
                     )))}
                     {this.state.effects.map((effect) => (
