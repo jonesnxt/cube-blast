@@ -17,15 +17,15 @@ import Util from '../helpers/Util.js';
 const Pieces = styled.div`
 	display: flex;
 	align-items: center;
-	width: ${({ width }) => width}px;
-	height: ${({ height }) => height}px;
+	width: ${({ width }) => width + 8}px;
+	height: ${({ height }) => height + 8}px;
     position: relative;
     margin: 0 auto;
     overflow: hidden;
 `;
 
 const Container = styled.div`
-    width: ${({ width }) => width}px;
+    width: ${({ width }) => width + 8}px;
     margin: 0 auto;
 `;
 
@@ -109,10 +109,6 @@ class Game extends React.Component {
         let newBoard = this.copy(this.state.board);
         
         let found = Match.find(newBoard, [], target);
-        if(found.length === 1) {
-            this.setState({ busy: false, moves: this.state.moves + 1 });
-            return;
-        }
         found = Match.findPowerups(newBoard, found);
 
         this.manageAnimation(() => {

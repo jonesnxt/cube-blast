@@ -1,14 +1,14 @@
 {
   "general": {
-    "name": "Gem Match",
-    "buttonText": "Start",
-    "fontFamily": "https://fonts.googleapis.com/css?family=Pacifico",
-    "backgroundImage": "https://i.pinimg.com/originals/0d/04/4c/0d044c10cb49a675389bc0e2ff66226b.jpg",
-    "width": "5",
-    "height": "8",
-    "animationLength": "500",
-    "baseScore": "60",
-    "moves": "20"
+    "name": "Cube Blast",
+    "buttonText": "Let's Go!",
+    "fontFamily": "https://fonts.googleapis.com/css?family=Nunito",
+    "backgroundImage": "https://images.koji-cdn.com/697d81e5-80dc-4ba8-bcef-c72a33c826b0/97c4cdbe-3f67-4f11-bfe1-5a68b0ed794c.jpg",
+    "width": "8",
+    "height": "10",
+    "animationLength": "600",
+    "baseScore": "100",
+    "moves": "25"
   },
   "@@editor": [
     {
